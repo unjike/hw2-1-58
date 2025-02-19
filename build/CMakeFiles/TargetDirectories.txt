@@ -1,0 +1,5 @@
+/global/homes/u/ursan/hw2-1-58/build/CMakeFiles/serial.dir
+/global/homes/u/ursan/hw2-1-58/build/CMakeFiles/openmp.dir
+/global/homes/u/ursan/hw2-1-58/build/CMakeFiles/serial_optimized.dir
+/global/homes/u/ursan/hw2-1-58/build/CMakeFiles/edit_cache.dir
+/global/homes/u/ursan/hw2-1-58/build/CMakeFiles/rebuild_cache.dir
