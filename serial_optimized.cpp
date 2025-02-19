@@ -1,11 +1,6 @@
 #include "common.h"
 #include <cmath>
 #include <vector>
-#include <omp.h>
-#include <cstdio>
-#include <cstdlib>
-
-using namespace std;
 
 // Apply the force from neighbor to particle
 void apply_force(particle_t& particle, particle_t& neighbor) {
@@ -62,7 +57,6 @@ void simulate_one_step(particle_t* parts, int num_parts, double size) {
     std::vector<std::vector<std::vector<int>>> cells(num_cells_x, std::vector<std::vector<int>>(num_cells_y));
 
     // 2. Populate the cells
-    // #pragma omp parallel
     for (int i = 0; i < num_parts; ++i) {
         int cell_x = floor(parts[i].x / cutoff);
         int cell_y = floor(parts[i].y / cutoff);
@@ -72,8 +66,8 @@ void simulate_one_step(particle_t* parts, int num_parts, double size) {
     // 3. Iterate through cells and their neighbors
     for (int i = 0; i < num_parts; ++i) {
         parts[i].ax = parts[i].ay = 0;
-        int cell_x = floor(parts[i].x / cutoff);
-        int cell_y = floor(parts[i].y / cutoff);
+        int cell_x = parts[i].x / cutoff;
+        int cell_y = parts[i].y / cutoff;
 
         for (int dx = -1; dx <= 1; ++dx) {
             for (int dy = -1; dy <= 1; ++dy) {
@@ -93,7 +87,6 @@ void simulate_one_step(particle_t* parts, int num_parts, double size) {
 
 
     // Move Particles
-    // #pragma omp parallel
     for (int i = 0; i < num_parts; ++i) {
         move(parts[i], size);
     }

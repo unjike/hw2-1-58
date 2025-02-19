@@ -13,7 +13,7 @@ set(GROUP_NAME "None" CACHE STRING "Your group name as it appears on bCourses (n
 if (NOT ${GROUP_NAME} STREQUAL None)
     set(CPACK_GENERATOR TGZ)
     set(CPACK_PACKAGE_FILE_NAME "cs267${GROUP_NAME}_hw2_1")
-    install(FILES serial.cpp openmp.cpp DESTINATION .)
+    install(FILES serial.cpp openmp.cpp serial_optimized.cpp DESTINATION .)
     install(FILES ${CPACK_PACKAGE_FILE_NAME}.pdf DESTINATION .)
     include(CPack)
 endif ()
@@ -29,6 +29,7 @@ endif ()
 add_executable(serial main.cpp serial.cpp common.h)
 
 add_executable(openmp main.cpp openmp.cpp common.h)
+add_executable(serial_optimized main.cpp serial_optimized.cpp common.h)
 target_link_libraries(openmp PRIVATE OpenMP::OpenMP_CXX)
 
 # Copy the job scripts
