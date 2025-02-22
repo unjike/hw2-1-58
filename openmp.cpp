@@ -2,10 +2,7 @@
 #include <cmath>
 #include <vector>
 #include <omp.h>
-#include <cstdio>
-#include <cstdlib>
 
-using namespace std;
 
 // Apply the force from neighbor to particle
 void apply_force(particle_t& particle, particle_t& neighbor) {
@@ -29,13 +26,15 @@ void apply_force(particle_t& particle, particle_t& neighbor) {
 
 // Integrate the ODE
 void move(particle_t& p, double size) {
+    
     // Slightly simplified Velocity Verlet integration
     // Conserves energy better than explicit Euler method
+   
     p.vx += p.ax * dt;
     p.vy += p.ay * dt;
     p.x += p.vx * dt;
     p.y += p.vy * dt;
-
+    
     // Bounce from walls
     while (p.x < 0 || p.x > size) {
         p.x = p.x < 0 ? -p.x : 2 * size - p.x;
@@ -46,6 +45,7 @@ void move(particle_t& p, double size) {
         p.y = p.y < 0 ? -p.y : 2 * size - p.y;
         p.vy = -p.vy;
     }
+    
 }
 
 // 
@@ -59,10 +59,10 @@ void simulate_one_step(particle_t* parts, int num_parts, double size) {
     // 1. Divide the space into cells
     int num_cells_x = ceil(size / cutoff);
     int num_cells_y = ceil(size / cutoff);
-    std::vector<std::vector<std::vector<int>>> cells(num_cells_x, std::vector<std::vector<int>>(num_cells_y));
 
+
+    std::vector<std::vector<std::vector<int>>> cells(num_cells_x, std::vector<std::vector<int>>(num_cells_y));
     // 2. Populate the cells
-    // #pragma omp parallel
     for (int i = 0; i < num_parts; ++i) {
         int cell_x = floor(parts[i].x / cutoff);
         int cell_y = floor(parts[i].y / cutoff);
@@ -70,17 +70,20 @@ void simulate_one_step(particle_t* parts, int num_parts, double size) {
     }
 
     // 3. Iterate through cells and their neighbors
+    #pragma omp for
     for (int i = 0; i < num_parts; ++i) {
         parts[i].ax = parts[i].ay = 0;
-        int cell_x = floor(parts[i].x / cutoff);
-        int cell_y = floor(parts[i].y / cutoff);
+        int cell_x = parts[i].x / cutoff;
+        int cell_y = parts[i].y / cutoff;
 
         for (int dx = -1; dx <= 1; ++dx) {
+          
             for (int dy = -1; dy <= 1; ++dy) {
                 int nx = cell_x + dx;
                 int ny = cell_y + dy;
 
                 if (nx >= 0 && nx < num_cells_x && ny >= 0 && ny < num_cells_y) {
+		    
                     for (int j : cells[nx][ny]) {
                         if (i != j) {
                             apply_force(parts[i], parts[j]);
@@ -93,7 +96,7 @@ void simulate_one_step(particle_t* parts, int num_parts, double size) {
 
 
     // Move Particles
-    // #pragma omp parallel
+    #pragma omp for
     for (int i = 0; i < num_parts; ++i) {
         move(parts[i], size);
     }
