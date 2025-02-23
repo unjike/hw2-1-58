@@ -3,11 +3,6 @@
 #include <vector>
 #include <omp.h>
 
-#include "common.h"
-#include <cmath>
-#include <vector>
-#include <omp.h>
-
 
 // Apply the force from neighbor to particle
 void apply_force(particle_t& particle, particle_t& neighbor) {
@@ -61,12 +56,13 @@ void simulate_one_step(particle_t* parts, int num_parts, double size) {
     // 1. Divide the space into cells
     int num_cells_x = ceil(size / cutoff);
     int num_cells_y = ceil(size / cutoff);
-
+    
+    #pragma omp barrier
 
     std::vector<std::vector<std::vector<int>>> cells(num_cells_x, std::vector<std::vector<int>>(num_cells_y));
     // 2. Populate the cells
-    #pragma omp barrier// #pragma omp critical
-    #pragma omp for
+    //#pragma omp barrier// #pragma omp critical
+    #pragma omp for nowait
     for (int i = 0; i < num_parts; ++i) {
         int cell_x = floor(parts[i].x / cutoff);
         int cell_y = floor(parts[i].y / cutoff);
@@ -79,7 +75,7 @@ void simulate_one_step(particle_t* parts, int num_parts, double size) {
     std::vector<double> local_ax(num_parts, 0.0);
     std::vector<double> local_ay(num_parts, 0.0);
 
-    #pragma omp for
+    #pragma omp for nowait
     for (int i = 0; i < num_parts; ++i) {
         parts[i].ax = parts[i].ay = 0;
         int cell_x = parts[i].x / cutoff;
@@ -92,7 +88,7 @@ void simulate_one_step(particle_t* parts, int num_parts, double size) {
                 int ny = cell_y + dy;
 
                 if (nx >= 0 && nx < num_cells_x && ny >= 0 && ny < num_cells_y) {
-		    
+		
                     for (int j : cells[nx][ny]) {
                         if (i != j) {
 			    // Accumulate forces in thread-local storage
@@ -117,7 +113,7 @@ void simulate_one_step(particle_t* parts, int num_parts, double size) {
 
     // Move Particles
     // #pragma omp barrier
-    #pragma omp for
+    #pragma omp for nowait
     for (int i = 0; i < num_parts; ++i) {
 	parts[i].ax += local_ax[i];
         parts[i].ay += local_ay[i];
